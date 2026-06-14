@@ -20,9 +20,6 @@
                 {% if user %}
                     <a href="/dashboard" class="nav-item">Dashboard</a>
                     <a href="/groups" class="nav-item">Groups</a>
-                    <!-- Expenses and Balances links will be context-dependent inside group views,
-                         but we can have global links or just these for the main nav -->
-                    <a href="/import" class="nav-item">Import CSV</a>
                     <a href="/logout" class="nav-item logout-btn">Logout</a>
                 {% else %}
                     <a href="/login" class="nav-item">Login</a>
