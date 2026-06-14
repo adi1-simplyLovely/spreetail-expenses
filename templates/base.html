@@ -1,1 +1,53 @@
-<!-- Base HTML template — navbar + layout. Will be built in Step 1.1.3 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobile-responsive meta viewport tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SplitEase{% endblock %}</title>
+    <!-- Link to our custom stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">SplitEase</a>
+            <div class="nav-links">
+                <!-- Check if user is logged in (we will pass 'user' from backend) -->
+                {% if user %}
+                    <a href="/dashboard" class="nav-item">Dashboard</a>
+                    <a href="/groups" class="nav-item">Groups</a>
+                    <!-- Expenses and Balances links will be context-dependent inside group views,
+                         but we can have global links or just these for the main nav -->
+                    <a href="/import" class="nav-item">Import CSV</a>
+                    <a href="/logout" class="nav-item logout-btn">Logout</a>
+                {% else %}
+                    <a href="/login" class="nav-item">Login</a>
+                    <a href="/signup" class="nav-item btn-primary">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area where child templates inject their content -->
+    <main class="container">
+        <!-- Flash messages for errors/success -->
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% block content %}
+        <!-- Child templates will put their HTML here -->
+        {% endblock %}
+    </main>
+
+    <!-- Link to vanilla JS -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
