@@ -1,1 +1,48 @@
-<!-- Groups list page -->
+{% extends "base.html" %}
+
+{% block title %}My Groups - SplitEase{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>My Groups</h2>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    <!-- Create New Group Card -->
+    <div class="card" style="border: 1px dashed var(--accent-teal); display: flex; flex-direction: column; justify-content: center;">
+        <h3 style="margin-bottom: 1rem; color: var(--accent-teal);">Create New Group</h3>
+        <form action="/groups" method="POST">
+            <div class="form-group">
+                <input type="text" name="name" class="form-control" placeholder="E.g., Flatmates, Goa Trip" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Create Group</button>
+        </form>
+    </div>
+
+    <!-- Existing Groups -->
+    {% for group in groups %}
+    <a href="/groups/{{ group.id }}" style="text-decoration: none; color: inherit;">
+        <div class="card" style="cursor: pointer; transition: transform 0.2s; height: 100%;">
+            <h3 style="color: var(--text-main); margin-bottom: 0.5rem;">{{ group.name }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Created: {{ group.created_at.strftime('%d-%m-%Y') }}
+            </p>
+            <div style="margin-top: 1rem; color: var(--accent-teal); font-weight: 500;">
+                {{ group.members|length }} Members
+            </div>
+        </div>
+    </a>
+    {% else %}
+    <div style="grid-column: 1 / -1; color: var(--text-muted); text-align: center; padding: 3rem 0;">
+        You are not part of any groups yet. Create one to get started!
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-teal);
+}
+</style>
+{% endblock %}
