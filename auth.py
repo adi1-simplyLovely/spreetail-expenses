@@ -7,9 +7,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import User
 
-# Generate a random 32-character secret key for JWT signing
-# (In a real app, this should be in .env, but for this assignment we hardcode or generate it)
-SECRET_KEY = secrets.token_hex(32)
+# Hardcoded secret key for assignment purposes to ensure tokens survive server restarts
+SECRET_KEY = "splitease_super_secret_key_for_assignment_only_do_not_use_in_prod"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
