@@ -6,7 +6,7 @@ import uvicorn
 
 from database import engine, Base
 from auth import get_current_user_optional
-from routers import auth_routes, group_routes, expense_routes
+from routers import auth_routes, group_routes, expense_routes, balance_routes
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -24,8 +24,8 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(auth_routes.router, tags=["Authentication"])
 app.include_router(group_routes.router)
 app.include_router(expense_routes.router)
+app.include_router(balance_routes.router)
 # Other routers will be included here as we build them
-# app.include_router(balance_routes.router)
 # app.include_router(settlement_routes.router)
 # app.include_router(import_routes.router)
 
