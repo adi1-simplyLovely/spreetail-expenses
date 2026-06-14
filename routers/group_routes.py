@@ -114,3 +114,97 @@ async def delete_group(
     db.commit()
     
     return RedirectResponse(url="/groups", status_code=status.HTTP_302_FOUND)
+
+
+# --- Step 4.1.2: Member Management Routes ---
+
+@router.post("/{group_id}/members")
+async def add_member(
+    request: Request,
+    group_id: int,
+    user_email: str = Form(...),
+    joined_at: date = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Add a new member to the group."""
+    # Find user by email
+    target_user = db.query(User).filter(User.email == user_email).first()
+    if not target_user:
+        # In a real app we might return an error template, but for now redirect with query param or just simple response
+        # Using a simple HTTP exception for simplicity, though flash messages are better in UI
+        return HTMLResponse("User with this email not found.", status_code=400)
+        
+    # Check if they are already active in the group
+    existing_membership = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == target_user.id,
+        GroupMember.left_at == None  # Currently active
+    ).first()
+    
+    if existing_membership:
+        return HTMLResponse("User is already an active member of this group.", status_code=400)
+        
+    # Add member
+    new_member = GroupMember(
+        group_id=group_id,
+        user_id=target_user.id,
+        joined_at=joined_at
+    )
+    db.add(new_member)
+    db.commit()
+    
+    return RedirectResponse(url=f"/groups/{group_id}", status_code=status.HTTP_302_FOUND)
+
+
+@router.post("/{group_id}/members/{user_id}/leave")
+async def set_leave_date(
+    request: Request,
+    group_id: int,
+    user_id: int,
+    left_at: date = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Set the date a member left the group (using POST for HTML form support)."""
+    # Find the active membership
+    membership = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == user_id,
+        GroupMember.left_at == None
+    ).first()
+    
+    if not membership:
+        return HTMLResponse("Active membership not found.", status_code=404)
+        
+    # Validate leave date > join date
+    if left_at <= membership.joined_at:
+        return HTMLResponse("Leave date must be after join date.", status_code=400)
+        
+    # Set leave date
+    membership.left_at = left_at
+    db.commit()
+    
+    return RedirectResponse(url=f"/groups/{group_id}", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/{group_id}/members")
+async def list_members(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """List members with join/leave dates (API endpoint)."""
+    members = db.query(GroupMember).filter(GroupMember.group_id == group_id).all()
+    # Return JSON representation since this is an API list
+    return [
+        {
+            "id": m.id,
+            "user_id": m.user_id,
+            "name": m.user.name,
+            "email": m.user.email,
+            "joined_at": m.joined_at,
+            "left_at": m.left_at
+        }
+        for m in members
+    ]
