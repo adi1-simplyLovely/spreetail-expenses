@@ -1,0 +1,1 @@
+# SplitEase — Shared Expense Tracker

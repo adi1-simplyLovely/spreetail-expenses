@@ -1,0 +1,26 @@
+# Web framework — fast, async-capable, auto-generates API docs, built-in validation
+fastapi
+
+# ASGI server — runs the FastAPI app, --reload for dev, production-ready
+uvicorn[standard]
+
+# ORM — maps Python classes to database tables, handles queries without raw SQL
+sqlalchemy
+
+# JWT tokens — creates and verifies JSON Web Tokens for user authentication
+python-jose[cryptography]
+
+# Password hashing — bcrypt algorithm, industry standard for storing passwords safely
+passlib[bcrypt]
+
+# File uploads — required by FastAPI to accept multipart/form-data (CSV upload)
+python-multipart
+
+# Template engine — renders HTML on the server side, no React/Vue needed
+jinja2
+
+# Date parsing — handles messy date formats like "Mar-14" from the CSV
+python-dateutil
+
+# Static files — serves CSS/JS files through FastAPI
+aiofiles
