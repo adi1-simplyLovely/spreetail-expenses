@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, Group, ImportLog
+from models import User, Group, GroupMember, ImportLog
 from auth import get_current_user
 from utils.csv_parser import process_csv_import
 
