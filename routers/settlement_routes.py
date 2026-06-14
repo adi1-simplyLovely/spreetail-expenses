@@ -32,8 +32,7 @@ async def add_settlement_page(
         GroupMember.left_at == None
     ).all()
     
-    return templates.TemplateResponse(
-        "settlement_add.html", 
+    return templates.TemplateResponse(request=request, name="settlement_add.html", context= 
         {
             "request": request, 
             "user": current_user, 

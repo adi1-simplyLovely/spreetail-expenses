@@ -46,7 +46,7 @@ async def dashboard(request: Request, user=Depends(get_current_user_optional)):
     """Temporary dashboard just to confirm login works."""
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request=request, name="dashboard.html", context= {"request": request, "user": user})
 
 
 if __name__ == "__main__":

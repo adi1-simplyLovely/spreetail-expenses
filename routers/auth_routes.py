@@ -21,7 +21,7 @@ def is_valid_email(email: str) -> bool:
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     """Render the login form."""
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html", context= {"request": request})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -37,8 +37,7 @@ async def login(
     
     # Verify user exists and password is correct
     if not user or not verify_password(password, user.password_hash):
-        return templates.TemplateResponse(
-            "login.html", 
+        return templates.TemplateResponse(request=request, name="login.html", context= 
             {"request": request, "error": "Invalid email or password"}
         )
     
@@ -60,7 +59,7 @@ async def login(
 @router.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
     """Render the signup form."""
-    return templates.TemplateResponse("signup.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="signup.html", context= {"request": request})
 
 
 @router.post("/signup", response_class=HTMLResponse)
@@ -74,22 +73,19 @@ async def signup(
     """Process signup and create a new user."""
     # Validations
     if not is_valid_email(email):
-        return templates.TemplateResponse(
-            "signup.html", 
+        return templates.TemplateResponse(request=request, name="signup.html", context= 
             {"request": request, "error": "Invalid email address format"}
         )
         
     if len(password) < 6:
-        return templates.TemplateResponse(
-            "signup.html", 
+        return templates.TemplateResponse(request=request, name="signup.html", context= 
             {"request": request, "error": "Password must be at least 6 characters long"}
         )
         
     # Check for duplicate email
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
-        return templates.TemplateResponse(
-            "signup.html", 
+        return templates.TemplateResponse(request=request, name="signup.html", context= 
             {"request": request, "error": "Email is already registered"}
         )
         
@@ -102,14 +98,12 @@ async def signup(
         db.commit()
     except IntegrityError:
         db.rollback()
-        return templates.TemplateResponse(
-            "signup.html", 
+        return templates.TemplateResponse(request=request, name="signup.html", context= 
             {"request": request, "error": "Database error occurred"}
         )
         
     # Redirect to login with success message
-    return templates.TemplateResponse(
-        "login.html", 
+    return templates.TemplateResponse(request=request, name="login.html", context= 
         {"request": request, "success": "Account created successfully! Please login."}
     )
 

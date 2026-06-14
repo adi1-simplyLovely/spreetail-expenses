@@ -52,8 +52,7 @@ async def view_balances(
     # Sort net balances: creditors (positive) first, debtors (negative) last
     rich_net_balances.sort(key=lambda x: x["balance"], reverse=True)
     
-    return templates.TemplateResponse(
-        "balances.html", 
+    return templates.TemplateResponse(request=request, name="balances.html", context= 
         {
             "request": request, 
             "user": current_user, 

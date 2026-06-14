@@ -22,8 +22,7 @@ async def list_groups(request: Request, db: Session = Depends(get_db), current_u
     
     groups = [m.group for m in memberships]
     
-    return templates.TemplateResponse(
-        "groups.html", 
+    return templates.TemplateResponse(request=request, name="groups.html", context= 
         {"request": request, "user": current_user, "groups": groups}
     )
 
@@ -81,8 +80,7 @@ async def group_detail(
     first_member_id = db.query(GroupMember).filter(GroupMember.group_id == group_id).order_by(GroupMember.id.asc()).first()
     is_creator = first_member_id and first_member_id.user_id == current_user.id
     
-    return templates.TemplateResponse(
-        "group_detail.html", 
+    return templates.TemplateResponse(request=request, name="group_detail.html", context= 
         {
             "request": request, 
             "user": current_user, 

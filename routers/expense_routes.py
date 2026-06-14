@@ -38,8 +38,7 @@ async def list_expenses(
         Expense.is_settlement == False
     ).order_by(Expense.date.desc()).all()
     
-    return templates.TemplateResponse(
-        "expense_list.html", 
+    return templates.TemplateResponse(request=request, name="expense_list.html", context= 
         {"request": request, "user": current_user, "group": group, "expenses": expenses}
     )
 
@@ -58,8 +57,7 @@ async def add_expense_page(
         GroupMember.left_at == None
     ).all()
     
-    return templates.TemplateResponse(
-        "expense_add.html", 
+    return templates.TemplateResponse(request=request, name="expense_add.html", context= 
         {"request": request, "user": current_user, "group": group, "members": members}
     )
 
@@ -145,8 +143,7 @@ async def expense_detail(
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
         
-    return templates.TemplateResponse(
-        "expense_detail.html", 
+    return templates.TemplateResponse(request=request, name="expense_detail.html", context= 
         {"request": request, "user": current_user, "expense": expense}
     )
 

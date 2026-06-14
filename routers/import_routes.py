@@ -24,8 +24,7 @@ async def import_page(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
         
-    return templates.TemplateResponse(
-        "import.html", 
+    return templates.TemplateResponse(request=request, name="import.html", context= 
         {"request": request, "user": current_user, "group": group}
     )
 
@@ -84,8 +83,7 @@ async def import_report_page(
     group = db.query(Group).filter(Group.id == log_record.group_id).first()
     anomalies = json.loads(log_record.report_json) if log_record.report_json else []
     
-    return templates.TemplateResponse(
-        "import_report.html", 
+    return templates.TemplateResponse(request=request, name="import_report.html", context= 
         {
             "request": request, 
             "user": current_user, 
