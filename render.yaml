@@ -1,1 +1,17 @@
-# Render.com deployment configuration — will be filled in Module 9
+services:
+  - type: web
+    name: splitease-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    
+    # We must mount a disk because Render's free tier has ephemeral storage.
+    # Without this, our SQLite database would reset every time the app restarts.
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+      
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
