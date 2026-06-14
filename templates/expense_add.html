@@ -1,1 +1,164 @@
-<!-- Add new expense form -->
+{% extends "base.html" %}
+
+{% block title %}Add Expense - {{ group.name }} - SplitEase{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="color: var(--accent-teal);">Add New Expense</h2>
+    <a href="/groups/{{ group.id }}/expenses" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to Expenses</a>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <form action="/groups/{{ group.id }}/expenses" method="POST" id="expenseForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <!-- Left Column: Basic Details -->
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" required placeholder="E.g., Dinner at Taj">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Paid By</label>
+                    <select name="paid_by" class="form-control" required>
+                        {% for member in members %}
+                            <option value="{{ member.user.id }}" {% if member.user.id == user.id %}selected{% endif %}>{{ member.user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 2;">
+                        <label class="form-label">Amount</label>
+                        <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Currency</label>
+                        <select name="currency" class="form-control">
+                            <option value="INR">INR</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Split Logic -->
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Split Type</label>
+                    <select name="split_type" id="split_type" class="form-control" required onchange="updateSplitFields()">
+                        <option value="equal">Equal</option>
+                        <option value="percentage">Percentage</option>
+                        <option value="unequal">Unequal (Exact Amounts)</option>
+                        <option value="share">Shares</option>
+                    </select>
+                </div>
+
+                <div id="split_members_container">
+                    <label class="form-label">Split Among Members</label>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;" id="split_help_text">
+                        Select members to split equally.
+                    </p>
+                    
+                    {% for member in members %}
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <input type="checkbox" name="split_with" value="{{ member.user.id }}" checked id="check_{{ member.user.id }}" class="member-checkbox">
+                        <label for="check_{{ member.user.id }}" style="flex: 1;">{{ member.user.name }}</label>
+                        <input type="number" step="0.01" class="form-control split-detail-input" style="width: 100px; display: none;" data-userid="{{ member.user.id }}" placeholder="Value">
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Hidden input to store JSON of split_details before submit -->
+                <input type="hidden" name="split_details" id="split_details">
+            </div>
+        </div>
+        
+        <div id="error_msg" style="color: var(--error-red); margin: 1rem 0; display: none;"></div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Expense</button>
+    </form>
+</div>
+
+<script>
+    function updateSplitFields() {
+        const type = document.getElementById('split_type').value;
+        const inputs = document.querySelectorAll('.split-detail-input');
+        const checkboxes = document.querySelectorAll('.member-checkbox');
+        const helpText = document.getElementById('split_help_text');
+        
+        if (type === 'equal') {
+            inputs.forEach(input => input.style.display = 'none');
+            checkboxes.forEach(cb => cb.style.display = 'inline-block');
+            helpText.innerText = "Select members to split equally.";
+        } else {
+            inputs.forEach(input => input.style.display = 'inline-block');
+            checkboxes.forEach(cb => {
+                cb.checked = true; // Force checked if entering details
+                cb.style.display = 'none';
+            });
+            
+            if (type === 'percentage') helpText.innerText = "Enter % for each member (Must sum to 100).";
+            if (type === 'unequal') helpText.innerText = "Enter exact INR amounts (Must sum to total).";
+            if (type === 'share') helpText.innerText = "Enter number of shares for each member.";
+        }
+    }
+
+    // Form submission hook to validate and build the JSON payload
+    document.getElementById('expenseForm').addEventListener('submit', function(e) {
+        const type = document.getElementById('split_type').value;
+        const errorMsg = document.getElementById('error_msg');
+        
+        if (type !== 'equal') {
+            let details = {};
+            let sum = 0;
+            const inputs = document.querySelectorAll('.split-detail-input');
+            
+            inputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val > 0) {
+                    details[input.dataset.userid] = val;
+                    sum += val;
+                }
+            });
+            
+            if (Object.keys(details).length === 0) {
+                e.preventDefault();
+                errorMsg.innerText = "Please enter valid values for the split.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (type === 'percentage' && (sum < 99.9 || sum > 100.1)) {
+                e.preventDefault();
+                errorMsg.innerText = `Percentages must sum to 100. Current sum is ${sum}.`;
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (type === 'unequal') {
+                const totalAmount = parseFloat(document.getElementById('amount').value);
+                // Note: If currency is USD, we don't strictly validate exact amounts in frontend, 
+                // but since exact amounts in the assignment CSV are given in INR natively despite being USD sometimes,
+                // we'll skip strict JS validation here and let the backend/user handle it.
+                // However, for INR, we can check.
+                const currency = document.querySelector('select[name="currency"]').value;
+                if (currency === 'INR' && Math.abs(sum - totalAmount) > 0.1) {
+                    e.preventDefault();
+                    errorMsg.innerText = `Exact amounts must sum to ${totalAmount}. Current sum is ${sum}.`;
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+            }
+            
+            document.getElementById('split_details').value = JSON.stringify(details);
+        }
+        errorMsg.style.display = 'none';
+    });
+</script>
+{% endblock %}

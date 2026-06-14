@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Expense Details - SplitEase{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+    <div>
+        <h2 style="color: var(--accent-teal);">{{ expense.description }}</h2>
+        <a href="/groups/{{ expense.group_id }}/expenses" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to Expenses</a>
+    </div>
+    
+    <form action="/expenses/{{ expense.id }}/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this expense?');">
+        <button type="submit" class="btn btn-danger">Delete Expense</button>
+    </form>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <div class="card">
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Expense Summary</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Date:</strong> {{ expense.date.strftime('%d-%m-%Y') }}</p>
+        <p style="margin-bottom: 0.5rem;"><strong>Paid By:</strong> {{ expense.payer.name }}</p>
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Amount:</strong> 
+            {{ expense.amount }} {{ expense.currency }}
+            {% if expense.currency != 'INR' %}
+                <span style="color: var(--text-muted);">(Converted to ₹{{ expense.amount_inr }} at fixed rate 83.50)</span>
+            {% endif %}
+        </p>
+        <p style="margin-bottom: 0.5rem;"><strong>Split Type:</strong> <span style="text-transform: capitalize;">{{ expense.split_type }}</span></p>
+        
+        {% if expense.is_flagged %}
+        <div class="alert alert-error" style="margin-top: 1rem; padding: 0.5rem;">
+            <strong>Flagged Anomaly:</strong> {{ expense.flag_reason }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted);">Split Breakdown</h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <th style="padding: 0.5rem 0;">Member</th>
+                    <th style="padding: 0.5rem 0; text-align: right;">Amount Owed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for split in expense.splits %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem 0;">
+                        {{ split.user.name }}
+                        {% if split.user_id == expense.paid_by %}
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">(Payer)</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 0.75rem 0; text-align: right; font-weight: 500;">₹{{ split.amount_owed }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
