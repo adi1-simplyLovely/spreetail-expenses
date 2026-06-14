@@ -24,6 +24,14 @@ async def import_page(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
         
+    # Verify current user is a member
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id
+    ).first()
+    if not is_member:
+        return RedirectResponse(url="/groups", status_code=status.HTTP_302_FOUND)
+        
     return templates.TemplateResponse(request=request, name="import.html", context= 
         {"request": request, "user": current_user, "group": group}
     )
@@ -38,6 +46,15 @@ async def process_import(
     current_user: User = Depends(get_current_user)
 ):
     """Process the uploaded CSV file, run the parser, and save the report."""
+    # Verify current user is a member
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.left_at == None
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to import to this group")
+
     # Ensure it's a CSV file
     if not file.filename.endswith(".csv"):
         # Should flash an error, but simple redirect for now
@@ -81,6 +98,14 @@ async def import_report_page(
         raise HTTPException(status_code=404, detail="Import Log not found")
         
     group = db.query(Group).filter(Group.id == log_record.group_id).first()
+    
+    # Verify current user is a member
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == log_record.group_id,
+        GroupMember.user_id == current_user.id
+    ).first()
+    if not is_member:
+        return RedirectResponse(url="/groups", status_code=status.HTTP_302_FOUND)
     anomalies = json.loads(log_record.report_json) if log_record.report_json else []
     
     return templates.TemplateResponse(request=request, name="import_report.html", context= 

@@ -126,11 +126,18 @@ async def add_member(
     current_user: User = Depends(get_current_user)
 ):
     """Add a new member to the group."""
+    # Ensure current user is a member of the group
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.left_at == None
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to add members to this group")
+
     # Find user by email
     target_user = db.query(User).filter(User.email == user_email).first()
     if not target_user:
-        # In a real app we might return an error template, but for now redirect with query param or just simple response
-        # Using a simple HTTP exception for simplicity, though flash messages are better in UI
         return HTMLResponse("User with this email not found.", status_code=400)
         
     # Check if they are already active in the group
@@ -165,6 +172,15 @@ async def set_leave_date(
     current_user: User = Depends(get_current_user)
 ):
     """Set the date a member left the group (using POST for HTML form support)."""
+    # Ensure current user is a member of the group
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.left_at == None
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to modify members in this group")
+
     # Find the active membership
     membership = db.query(GroupMember).filter(
         GroupMember.group_id == group_id,
@@ -193,6 +209,14 @@ async def list_members(
     current_user: User = Depends(get_current_user)
 ):
     """List members with join/leave dates (API endpoint)."""
+    # Ensure current user is a member
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to view members of this group")
+
     members = db.query(GroupMember).filter(GroupMember.group_id == group_id).all()
     # Return JSON representation since this is an API list
     return [

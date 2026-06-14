@@ -80,6 +80,15 @@ async def create_expense(
     """Create a new expense and its splits in one transaction."""
     amount_inr = convert_to_inr(amount, currency)
     
+    # Ensure user is a member of the group
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.left_at == None
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to add expenses to this group")
+    
     # Create the Expense record
     new_expense = Expense(
         group_id=group_id,
@@ -107,14 +116,17 @@ async def create_expense(
 
     # Calculate splits
     splits = {}
-    if split_type == "equal":
-        splits = calculate_equal_split(amount_inr, split_with)
-    elif split_type == "percentage":
-        splits = calculate_percentage_split(amount_inr, details_dict)
-    elif split_type == "unequal":
-        splits = calculate_unequal_split(details_dict)
-    elif split_type == "share":
-        splits = calculate_share_split(amount_inr, details_dict)
+    try:
+        if split_type == "equal":
+            splits = calculate_equal_split(amount_inr, split_with)
+        elif split_type == "percentage":
+            splits = calculate_percentage_split(amount_inr, details_dict)
+        elif split_type == "unequal":
+            splits = calculate_unequal_split(details_dict)
+        elif split_type == "share":
+            splits = calculate_share_split(amount_inr, details_dict)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
         
     # Store Expense Splits
     for user_id, amount_owed in splits.items():
@@ -158,6 +170,15 @@ async def delete_expense(
     expense = db.query(Expense).filter(Expense.id == expense_id).first()
     if not expense:
         raise HTTPException(status_code=404, detail="Expense not found")
+        
+    # Verify user belongs to the group
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == expense.group_id,
+        GroupMember.user_id == current_user.id,
+        GroupMember.left_at == None
+    ).first()
+    if not is_member:
+        raise HTTPException(status_code=403, detail="Not authorized to delete expenses in this group")
         
     group_id = expense.group_id
     db.delete(expense) # Cascade deletes splits automatically
