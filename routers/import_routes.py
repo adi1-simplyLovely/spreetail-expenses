@@ -45,7 +45,7 @@ async def process_import(
         
     # Read file content
     content = await file.read()
-    decoded_content = content.decode("utf-8")
+    decoded_content = content.decode("utf-8-sig")
     
     # Run the core parsing pipeline
     report = process_csv_import(decoded_content, group_id, db)
