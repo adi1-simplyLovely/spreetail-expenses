@@ -102,15 +102,18 @@ def process_csv_import(file_content: str, group_id: int, db: Session) -> dict:
     for row_num, row in enumerate(reader, start=2): # Start 2 because of header
         report["total_rows"] += 1
         
+        # Normalize row keys (strip BOM, spaces, and make lowercase) to prevent any header mismatch issues
+        normalized_row = {k.strip('\ufeff').strip().lower() if k else "": v for k, v in row.items()}
+        
         # --- STAGE 1: Normalize Data & Basic Extraction ---
-        raw_date = row.get("Date", "")
-        raw_desc = row.get("Description", "").strip()
-        raw_paid_by = row.get("Paid By", "").strip().title()
-        raw_amount = row.get("Amount", "0")
-        currency = row.get("Currency", "INR").strip().upper()
-        raw_split_type = row.get("Split Type", "").strip().lower()
-        raw_split_details = row.get("Split Details", "")
-        notes = row.get("Notes", "").strip().lower()
+        raw_date = normalized_row.get("date", "")
+        raw_desc = normalized_row.get("description", "").strip()
+        raw_paid_by = normalized_row.get("paid by", "").strip().title()
+        raw_amount = normalized_row.get("amount", "0")
+        currency = normalized_row.get("currency", "inr").strip().upper()
+        raw_split_type = normalized_row.get("split type", "").strip().lower()
+        raw_split_details = normalized_row.get("split details", "")
+        notes = normalized_row.get("notes", "").strip().lower()
         
         # Parse Amount
         try:
