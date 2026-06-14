@@ -1,1 +1,12 @@
-<!-- Dashboard page — home after login -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SplitEase{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 2rem auto;">
+    <h2 style="color: var(--accent-teal);">Welcome to Dashboard, {{ user.name }}!</h2>
+    <p style="color: var(--text-muted); margin-top: 1rem;">
+        Authentication module is working perfectly. You are logged in as <strong>{{ user.email }}</strong>.
+    </p>
+</div>
+{% endblock %}
