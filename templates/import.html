@@ -1,1 +1,31 @@
-<!-- CSV upload page -->
+{% extends "base.html" %}
+
+{% block title %}Import CSV - {{ group.name }} - SplitEase{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="color: var(--accent-teal);">Import Expenses from CSV</h2>
+    <a href="/groups/{{ group.id }}" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to Group</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Upload your spreadsheet export to automatically create expenses, assign splits, and log settlements. Our engine will automatically detect and handle anomalies (duplicates, wrong notes, invalid percentages).
+    </p>
+
+    <div class="alert" style="background-color: var(--bg-dark); border: 1px dashed var(--border-color); color: var(--text-muted);">
+        <strong>Expected Columns:</strong><br>
+        Date, Description, Paid By, Amount, Currency, Split Type, Split Details, Notes
+    </div>
+
+    <!-- Note: enctype="multipart/form-data" is strictly required for file uploads in HTML -->
+    <form action="/groups/{{ group.id }}/import" method="POST" enctype="multipart/form-data" style="margin-top: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label" for="file">Select CSV File</label>
+            <input type="file" id="file" name="file" accept=".csv" required class="form-control" style="background-color: var(--bg-card);">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Upload and Process</button>
+    </form>
+</div>
+{% endblock %}

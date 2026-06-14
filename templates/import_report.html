@@ -1,1 +1,62 @@
-<!-- Anomaly report display after CSV import -->
+{% extends "base.html" %}
+
+{% block title %}Import Report - {{ group.name }} - SplitEase{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h2 style="color: var(--accent-teal);">Import Report</h2>
+        <p style="color: var(--text-muted);">Processed on: {{ log.imported_at.strftime('%d-%m-%Y %H:%M') }}</p>
+    </div>
+    
+    <div style="display: flex; gap: 1rem;">
+        <a href="/groups/{{ group.id }}/expenses" class="btn" style="background-color: var(--bg-card); border: 1px solid var(--border-color); color: white;">Go to Expenses</a>
+        <a href="/groups/{{ group.id }}/balances" class="btn btn-primary">Check New Balances</a>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="text-align: center; border-top: 4px solid var(--border-color);">
+        <h3 style="font-size: 2rem; color: var(--text-main);">{{ log.total_rows }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; font-weight: 600;">Total Rows</p>
+    </div>
+    <div class="card" style="text-align: center; border-top: 4px solid var(--success-green);">
+        <h3 style="font-size: 2rem; color: var(--success-green);">{{ log.imported }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; font-weight: 600;">Imported</p>
+    </div>
+    <div class="card" style="text-align: center; border-top: 4px solid var(--text-muted);">
+        <h3 style="font-size: 2rem; color: var(--text-muted);">{{ log.skipped }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; font-weight: 600;">Skipped</p>
+    </div>
+    <div class="card" style="text-align: center; border-top: 4px solid var(--error-red);">
+        <h3 style="font-size: 2rem; color: var(--error-red);">{{ log.flagged }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; font-weight: 600;">Flagged</p>
+    </div>
+</div>
+
+<!-- Anomalies Log -->
+<div class="card">
+    <h3 style="margin-bottom: 1.5rem; color: var(--error-red);">Anomaly & Activity Log</h3>
+    
+    {% if anomalies %}
+        <ul style="list-style-position: inside; color: var(--text-muted);">
+            {% for anomaly in anomalies %}
+                <li style="margin-bottom: 0.8rem; line-height: 1.5;">
+                    <!-- Highlight keywords for better readability -->
+                    {% if 'Skipped' in anomaly %}
+                        <span style="color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.8rem; margin-right: 0.5rem;">SKIPPED</span>
+                    {% elif 'Flagged' in anomaly %}
+                        <span style="color: var(--error-red); border: 1px solid var(--error-red); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.8rem; margin-right: 0.5rem;">FLAGGED</span>
+                    {% endif %}
+                    {{ anomaly }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div style="text-align: center; padding: 2rem 0; color: var(--success-green);">
+            <p>Perfect import! No anomalies or errors detected.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
