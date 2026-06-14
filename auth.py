@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import secrets
 from fastapi import Depends, HTTPException, status, Request
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
@@ -13,16 +13,15 @@ SECRET_KEY = secrets.token_hex(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
-# Password hashing configuration using bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+# Password hashing using bcrypt directly (passlib has bugs with modern bcrypt)
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a plain password against the hashed version."""
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def get_password_hash(password: str) -> str:
     """Generates a bcrypt hash for the given password."""
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def create_access_token(data: dict) -> str:
     """Creates a JWT access token with an expiration time."""

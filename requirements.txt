@@ -11,7 +11,7 @@ sqlalchemy
 python-jose[cryptography]
 
 # Password hashing — bcrypt algorithm, industry standard for storing passwords safely
-passlib[bcrypt]
+bcrypt
 
 # File uploads — required by FastAPI to accept multipart/form-data (CSV upload)
 python-multipart
