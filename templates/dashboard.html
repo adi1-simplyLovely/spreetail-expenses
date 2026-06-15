@@ -3,10 +3,73 @@
 {% block title %}Dashboard - SplitEase{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width: 800px; margin: 2rem auto;">
-    <h2 style="color: var(--accent-teal);">Welcome to Dashboard, {{ user.name }}!</h2>
-    <p style="color: var(--text-muted); margin-top: 1rem;">
-        Authentication module is working perfectly. You are logged in as <strong>{{ user.email }}</strong>.
+<div class="dashboard-header" style="margin-bottom: 3rem; text-align: center; padding: 3rem 1rem; background: linear-gradient(135deg, rgba(38,166,154,0.1) 0%, rgba(38,166,154,0) 100%); border-radius: 16px; border: 1px solid rgba(38,166,154,0.2);">
+    <h1 style="color: var(--accent-teal); font-size: 2.5rem; margin-bottom: 0.5rem;">Welcome back, {{ user.name }}! 👋</h1>
+    <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+        Your SplitEase dashboard is ready. Manage your shared expenses, check your balances, and settle up easily.
     </p>
 </div>
+
+<div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="card" style="text-align: center; padding: 2rem;">
+        <h3 style="color: var(--text-muted); font-size: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Active Groups</h3>
+        <div style="font-size: 3rem; font-weight: 700; color: var(--accent-teal);">{{ groups|length }}</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 2rem;">
+        <h3 style="color: var(--text-muted); font-size: 1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Account Status</h3>
+        <div style="font-size: 1.5rem; font-weight: 600; color: #4caf50; margin-top: 1rem;">Verified & Secure</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">{{ user.email }}</p>
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2 style="color: var(--text-main);">Your Groups</h2>
+    <a href="/groups" class="btn btn-outline" style="font-size: 0.9rem;">View All Groups</a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <!-- Create New Group Card -->
+    <div class="card" style="border: 2px dashed var(--accent-teal); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s ease; text-align: center;" onclick="window.location.href='/groups'">
+        <div style="font-size: 3rem; color: var(--accent-teal); margin-bottom: 1rem;">+</div>
+        <h3 style="color: var(--accent-teal);">Create New Group</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Start splitting with friends</p>
+    </div>
+
+    <!-- Existing Groups (Show up to 3 on dashboard) -->
+    {% for group in groups[:3] %}
+    <a href="/groups/{{ group.id }}" style="text-decoration: none; color: inherit;">
+        <div class="card" style="cursor: pointer; transition: transform 0.2s, border-color 0.2s; height: 100%; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3 style="color: var(--text-main); margin-bottom: 0.5rem;">{{ group.name }}</h3>
+                <span style="background: rgba(38,166,154,0.1); color: var(--accent-teal); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">Active</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">
+                Created: {{ group.created_at.strftime('%B %d, %Y') }}
+            </p>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span style="color: var(--accent-teal); font-weight: 600;">{{ group.members|length }}</span> Members
+                </div>
+                <span style="color: var(--accent-teal); font-size: 0.9rem;">Open Group →</span>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<style>
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-teal) !important;
+    box-shadow: 0 8px 24px rgba(38,166,154,0.15);
+}
+.btn-outline {
+    border: 1px solid var(--accent-teal);
+    color: var(--accent-teal);
+    background: transparent;
+}
+.btn-outline:hover {
+    background: rgba(38,166,154,0.1);
+}
+</style>
 {% endblock %}

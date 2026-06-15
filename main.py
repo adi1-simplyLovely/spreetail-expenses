@@ -40,13 +40,31 @@ async def root(user=Depends(get_current_user_optional)):
     return RedirectResponse(url="/login")
 
 
-# Temporary dashboard route just to test the login redirect
+from sqlalchemy.orm import Session
+from database import get_db
+from models import GroupMember
+from datetime import date
+
+# Dashboard route
 @app.get("/dashboard")
-async def dashboard(request: Request, user=Depends(get_current_user_optional)):
-    """Temporary dashboard just to confirm login works."""
+async def dashboard(request: Request, user=Depends(get_current_user_optional), db: Session = Depends(get_db)):
+    """Main dashboard showing overview of user's groups."""
     if not user:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse(request=request, name="dashboard.html", context= {"request": request, "user": user})
+        
+    # Fetch user's active groups
+    memberships = db.query(GroupMember).filter(
+        GroupMember.user_id == user.id,
+        (GroupMember.left_at == None) | (GroupMember.left_at > date.today())
+    ).all()
+    
+    groups = [m.group for m in memberships]
+    
+    return templates.TemplateResponse(request=request, name="dashboard.html", context={
+        "request": request, 
+        "user": user,
+        "groups": groups
+    })
 
 
 if __name__ == "__main__":
